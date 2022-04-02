@@ -10,10 +10,10 @@ use TencentCloud\Ocr\V20181119\Models\GeneralAccurateOCRRequest;
 
 $dotenv = \Dotenv\Dotenv::createMutable(__DIR__);
 $dotenv->load();
-$id = $_ENV['APP_ID'];
+$id  = $_ENV['APP_ID'];
 $sec = $_ENV['APP_SECRET'];
-$s = $_POST['source'];
-$n = $_POST['new'];
+$s   = $_POST['source'];
+$n   = $_POST['new'];
 header("Content-Type: application/json; charset=UTF-8");
 if(empty($s) || empty($n)){
     echo '{}';
@@ -41,7 +41,7 @@ try {
     $resp = $client->GeneralAccurateOCR($req);
     $data = [];
 
-    $data['source'] = json_decode($resp->toJsonString()(), true);
+    $data['source'] = json_decode($resp->toJsonString(), true);
 
     $params = array(
         "ImageBase64" => explode(",", $n)[1],
