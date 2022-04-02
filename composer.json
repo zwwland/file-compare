@@ -1,0 +1,18 @@
+{
+    "name": "root/ocr-compare",
+    "autoload": {
+        "psr-4": {
+            "Root\\OcrCompare\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "benchu1k",
+            "email": "benchu1k@gmail.com"
+        }
+    ],
+    "require": {
+        "tencentcloud/tencentcloud-sdk-php": "^3.0",
+        "vlucas/phpdotenv": "^5.4"
+    }
+}
