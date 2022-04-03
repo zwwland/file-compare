@@ -25,7 +25,7 @@ try {
     $cred = new Credential($id, $sec);
     $httpProfile = new HttpProfile();
     $httpProfile->setEndpoint("ocr.tencentcloudapi.com");
-      
+
     $clientProfile = new ClientProfile();
     $clientProfile->setHttpProfile($httpProfile);
     $client = new OcrClient($cred, "ap-beijing", $clientProfile);
