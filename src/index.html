@@ -1,226 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
-        .files {
-            display:flex;
-            flex-direction: row;
-            justify-content: space-around;
-        }
-        .images {
-            display:flex;
-            flex-direction: row;
-            justify-content: space-around;
-        }
-        .item{
-            width: 100%;
-            height: 300px;
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-        }
-        .item div {
-            width: 35%;
-            height: 300px;
-            border: 1px solid;
-            box-sizing: border-box;
-            overflow: scroll;
-        }
-        /* .item div:nth-child(1) { */
-            /* border-color: red; */
-        /* } */
-        /* .item div:nth-child(2) { */
-            /* border-color: green; */
-        /* } */
+      .files {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+      .images {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+      .images img{
+          height: 240px;
+      }
+      .item {
+        width: 100%;
+        height: 300px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+      .item div {
+        width: 35%;
+        height: 300px;
+        border: 1px solid;
+        box-sizing: border-box;
+        overflow: scroll;
+      }
+      .red {
+          color: red;
+      }
+      .green {
+          color:green;
+      }
+      /* .item div:nth-child(1) { */
+      /* border-color: red; */
+      /* } */
+      /* .item div:nth-child(2) { */
+      /* border-color: green; */
+      /* } */
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <p class="files">
-    <span>原：<input type="file" name="source"></span>    
-    |
-    <span>新：<input type="file" name="new"></span>
+      <span>原：<input type="file" name="source" /></span>
+      |
+      <span>新：<input type="file" name="new" /></span>
     </p>
     <div class="images">
-        <img class="image-source" />
-        <img class="image-new" />
+      <img class="image-source" />
+      <img class="image-new" />
     </div>
-    <hr>
+    <hr />
+    对比结果：(其中：<span class="red">红色删除的</span> | <span class="green">绿色新增的</span>)
     <div class="item">
-        <div class="item-source">spa</div>
-        <div class="item-new">spa</div>
+      <div class="item-source"></div>
+      <div class="item-new"></div>
     </div>
-    <script >
-        function comp (formalCode, commitCode) {
+    <script src="/diff.js"></script>
+    <script>
+      !(function () {
+        const files = document.querySelectorAll(".files input");
+        files.forEach((f, i) => {
+          f.addEventListener("change", function () {
+            const f = this.files[0];
+            const reader = new FileReader();
+            const url = reader.readAsDataURL(f);
+            reader.addEventListener("loadend", function () {
+              const images = document.querySelectorAll(".images img");
+              images[i].src = this.result;
+              // if (images.forEach(g => g.src.length > 0) == -1)
+              // {
+              //     console.log("all images loaded")
+              // }
+              let count = 0;
+              for (const im of images) {
+                if (im.src.length > 0) {
+                  count++;
+                }
+              }
+              if (count == 2) {
+                console.log("all images loaded");
+                formData = new FormData();
+                formData.append("source", images[0].src);
+                formData.append("new", images[1].src);
+                fetch("/api.php", { method: "POST", body: formData })
+                  .then((res) => res.json())
+                  .then((res) => {
+                    const s = res.source.TextDetections.map(
+                      (item) => item.DetectedText
+                    ).join("");
+                    const n = res.new.TextDetections.map(
+                      (item) => item.DetectedText
+                    ).join("");
+                    console.log(Diff)
+                    let diff = Diff.diffChars(s, n, { ignoreCase: false });
+                    var sourceFragment = document.createDocumentFragment();
+                    sourceFragment.appendChild(document.createTextNode(s));
+                    var fragment = document.createDocumentFragment();
 
-let lhs = formalCode,
-    rhs = commitCode, 
-    lmodify = [], 
-    ldelete = [], 
-    lempty = [], 
-    radd = [],
-    rmodify = [], 
-    rempty = [],
-    LeftObj = {},
-    RightObj = {};
-
-let lindex = 0, 
-rindex = 0;
-
-do {
-    let lline = lhs[lindex];
-    let rline = rhs[rindex];
-    if (lline === rline) {
-        //两行相等
-        lindex++;
-        rindex++;
-        lmodify.push(false);
-        ldelete.push(false);
-        lempty.push(false);
-        radd.push(false);
-        rmodify.push(false);
-        rempty.push(false);
-    } else {
-        //两行不等
-        if (lhs.slice(lindex).includes(rline)) {
-            //左边对应被删除的项
-            let nextIndex = lhs.slice(lindex).indexOf(rline)+lindex;
-
-            for (let n = 0; n < nextIndex - lindex; n++) {
-                lmodify.push(false);
-                ldelete.push(true);
-                lempty.push(false);
-                radd.push(false);
-                rempty.push(true);
-                rmodify.push(false);
-                rhs.splice(rindex, 0, " \n");
-                rindex++;
-            }
-            lindex = nextIndex;
-
-        } else if (rhs.slice(rindex).includes(lline)) {
-            //右边对应新增的项
-            let nextIndex = rhs.slice(rindex).indexOf(lline)+rindex;
-
-            for (let n = 0; n < nextIndex - rindex; n++) {
-                radd.push(true);
-                rmodify.push(false);
-                rempty.push(false);
-                ldelete.push(false);
-                lempty.push(true);
-                lmodify.push(false);
-                lhs.splice(lindex, 0, " \n");
-                lindex++;
-            }
-            rindex = nextIndex;
-        } else {
-            //被修改的行
-            lindex++;
-            rindex++;
-            lmodify.push(true);
-            ldelete.push(false);
-            lempty.push(false);
-            radd.push(false);
-            rmodify.push(true);
-            rempty.push(false);
-        }
-    }
-
-    if (lindex === lhs.length && rindex < rhs.length) {
-        for (let n = 0;  n < rhs.length - rindex ; n++ ) {
-            radd.push(true);
-            rmodify.push(false);
-        }
-        rindex = rhs.length;
-    } else if (lindex < lhs.length && rindex === rhs.length) {
-        for (let n = 0; n< lhs.length - lindex ; n++ ) {
-            lmodify.push(false);
-            ldelete.push(true);
-        }
-        lindex = lhs.length;
-    }
-
-} while (lindex < lhs.length && rindex < rhs.length);
-
-
-LeftObj.delete = ldelete;
-LeftObj.modify = lmodify;
-LeftObj.empty = lempty;
-RightObj.add = radd;
-RightObj.modify = rmodify;
-RightObj.empty = rempty;
-LeftObj.code = lhs;
-RightObj.code = rhs;
-
-
-return {
-    LeftObj,
-    RightObj
-};
-
-
-}
-        !function(){
-           const files = document.querySelectorAll(".files input")
-           files.forEach((f, i) => {
-               f.addEventListener("change",function(){
-                   const f = this.files[0]
-                   const reader = new FileReader()
-                   const url = reader.readAsDataURL(f)
-                   reader.addEventListener("loadend" , function () {
-                        const images = document.querySelectorAll(".images img")
-                        images[i].src = this.result
-                        // if (images.forEach(g => g.src.length > 0) == -1)
-                        // {
-                        //     console.log("all images loaded")
-                        // }
-                        let count = 0
-                        for (const im of images) {
-                            if(im.src.length > 0) {
-                                count++
-                            }
-                        }
-                        if(count == 2) {
-                            console.log("all images loaded")
-                            formData = new FormData();
-                            formData.append("source", images[0].src);
-                            formData.append("new", images[1].src);
-                            fetch("/api.php", { method: 'POST', body: formData }).then(res => res.json()).then(res => {
-                                const s = res.source.TextDetections.map(item => item.DetectedText)
-                                const n = res.new.TextDetections.map(item => item.DetectedText)
-                                let r = comp(s,n)
-                                const t = `<p>%e%s</p>`
-                                let sourceText = r.LeftObj.code.map((text,i)=> {
-                                    return t.replace("%e",'').replace("%s",text)
-                                }).join('')
-                                let newText = r.RightObj.code.map((text,i)=> {
-                                    if(r.RightObj.add[i]){
-                                        return t.replace('%e', `<span style="color:green">+</span>`).replace('%s',text)
-                                    }
-                                    if(r.RightObj.modify[i]){
-                                        return t.replace('%e', `<span color="yellow">/</span>`).replace('%s',text)
-                                    }
-                                    if(r.RightObj.empty[i]){
-                                        return t.replace('%e', `<span color="red">-</span>`).replace('%s',text)
-                                    }
-                                    return t.replace("%e",'').replace("%s",text)
-                                }).join('')
-                                document.querySelector(".item-source").innerHTML = sourceText
-                                document.querySelector(".item-new").innerHTML = newText
-                            });
-                        }
-                        reader.removeEventListener("loadend",this)
-                   })
-               })
-           })
-           console.log(files)
-        }()
-        // fetch('api.php').then(res=>res.text()).then(data=>{
-        //     console.log(data);
-        // })
+                    diff.forEach((part) => {
+                      // green for additions, red for deletions
+                      // grey for common parts
+                      console.log(part)
+                      const color = part.added
+                        ? "green"
+                        : part.removed
+                        ? "red"
+                        : "grey";
+                      span = document.createElement("span");
+                      span.style.color = color;
+                      span.appendChild(document.createTextNode(part.value));
+                      fragment.appendChild(span);
+                    });
+                    document
+                      .querySelector(".item-source")
+                      .appendChild(sourceFragment);
+                    document.querySelector(".item-new").appendChild(fragment);
+                  });
+              }
+              reader.removeEventListener("loadend", this);
+            });
+          });
+        });
+        console.log(files);
+      })();
+      // fetch('api.php').then(res=>res.text()).then(data=>{
+      //     console.log(data);
+      // })
     </script>
-</body>
+  </body>
 </html>
