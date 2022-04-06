@@ -16,8 +16,8 @@
         flex-direction: row;
         justify-content: space-around;
       }
-      .images img{
-          height: 240px;
+      .images img {
+        height: 240px;
       }
       .item {
         width: 100%;
@@ -34,10 +34,10 @@
         overflow: scroll;
       }
       .red {
-          color: red;
+        color: red;
       }
       .green {
-          color:green;
+        color: green;
       }
       /* .item div:nth-child(1) { */
       /* border-color: red; */
@@ -58,7 +58,8 @@
       <img class="image-new" />
     </div>
     <hr />
-    对比结果：(其中：<span class="red">红色删除的</span> | <span class="green">绿色新增的</span>)
+    对比结果：(其中：<span class="red">红色删除的</span> |
+    <span class="green">绿色新增的</span>)
     <div class="item">
       <div class="item-source"></div>
       <div class="item-new"></div>
@@ -99,30 +100,56 @@
                     const n = res.new.TextDetections.map(
                       (item) => item.DetectedText
                     ).join("");
-                    console.log(Diff)
+                    console.log(Diff);
                     let diff = Diff.diffChars(s, n, { ignoreCase: false });
+                    let fd = new FormData();
+                    fd.append("a", s);
+                    fd.append("b", n);
+                    fetch("http://apis.998990.xyz/dish/diffs", {
+                      method: "POST",
+                      body: fd,
+                    })
+                      .then((res) => res.json())
+                      .then((res) => {
+                        var fragment = document.createDocumentFragment();
+                        res.data.forEach((r) => {
+                          var span = document.createElement("span");
+                          let color = 'gray'
+                          switch (r.action) {
+                            case '=':
+                              color = 'gray'
+                              span.appendChild(document.createTextNode(r.new_element))
+                              break;
+                            case '+':
+                              color = 'green'
+                              span.appendChild(document.createTextNode(r.new_element))
+                              break;
+                            case '-':
+                              color = 'red'
+                              span.appendChild(document.createTextNode(r.old_element))
+                              break;
+                            case '!':
+                              color = 'blue'
+                              span.appendChild(document.createTextNode(r.new_element))
+                              break;
+                            default:
+                              break;
+                          }
+                          span.style.color = color
+                          fragment.appendChild(span);
+                        });
+                        document
+                          .querySelector(".item-source")
+                          .appendChild(sourceFragment);
+                        document
+                          .querySelector(".item-new")
+                          .appendChild(fragment);
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                      });
                     var sourceFragment = document.createDocumentFragment();
                     sourceFragment.appendChild(document.createTextNode(s));
-                    var fragment = document.createDocumentFragment();
-
-                    diff.forEach((part) => {
-                      // green for additions, red for deletions
-                      // grey for common parts
-                      console.log(part)
-                      const color = part.added
-                        ? "green"
-                        : part.removed
-                        ? "red"
-                        : "grey";
-                      span = document.createElement("span");
-                      span.style.color = color;
-                      span.appendChild(document.createTextNode(part.value));
-                      fragment.appendChild(span);
-                    });
-                    document
-                      .querySelector(".item-source")
-                      .appendChild(sourceFragment);
-                    document.querySelector(".item-new").appendChild(fragment);
                   });
               }
               reader.removeEventListener("loadend", this);
