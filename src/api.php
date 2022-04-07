@@ -7,6 +7,7 @@ use TencentCloud\Common\Profile\HttpProfile;
 use TencentCloud\Common\Exception\TencentCloudSDKException;
 use TencentCloud\Ocr\V20181119\OcrClient;
 use TencentCloud\Ocr\V20181119\Models\GeneralAccurateOCRRequest;
+use TencentCloud\Ocr\V20181119\Models\GeneralHandwritingOCRRequest;
 
 $dotenv = \Dotenv\Dotenv::createMutable(__DIR__);
 $dotenv->load();
@@ -30,16 +31,21 @@ try {
     $clientProfile->setHttpProfile($httpProfile);
     $client = new OcrClient($cred, "ap-beijing", $clientProfile);
 
-    $req = new GeneralAccurateOCRRequest();
+    // $req = new GeneralAccurateOCRRequest();
+    $req = new GeneralHandwritingOCRRequest();
     
     $params = array(
         "ImageBase64" => explode(",", $s)[1],
+        //手写体
+        // "EnableWordPolygon "=> true,
+
         "EnableDetectSplit" => true,
         "IsWords"=> true
     );
     $req->fromJsonString(json_encode($params));
 
     $resp = $client->GeneralAccurateOCR($req);
+    // $resp = $client->GeneralHandwritingOCR($req);
     $data = [];
 
     $data['source'] = json_decode($resp->toJsonString(), true);

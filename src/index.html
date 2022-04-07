@@ -95,11 +95,12 @@
                   .then((res) => res.json())
                   .then((res) => {
                     const s = res.source.TextDetections.map(
-                      (item) => item.DetectedText
+                      (item) => item.DetectedText.replace(/[\s\,「」\-="'，。.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
                     ).join("");
                     const n = res.new.TextDetections.map(
-                      (item) => item.DetectedText
+                      (item) => item.DetectedText.replace(/[\s\,「」\-="'，。.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
                     ).join("");
+                    // console.log(s,n)
                     let al = aligner.NWaligner({
                       gapSymbol: "⭐"
                     })
