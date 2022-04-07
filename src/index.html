@@ -58,14 +58,14 @@
       <img class="image-new" />
     </div>
     <hr />
-    对比结果：(其中：<span class="red">红色删除的</span> |
+    对比结果：(其中：<span class="red">红色缺失的</span> |
     <span class="green">绿色新增的</span>)
     <div class="item">
       <div class="item-source"></div>
       <div class="item-new"></div>
     </div>
-    <script src="/diff.js"></script>
-    <script>
+    <script type="module" >
+      import aligner from './out.js'
       !(function () {
         const files = document.querySelectorAll(".files input");
         files.forEach((f, i) => {
@@ -88,7 +88,7 @@
               }
               if (count == 2) {
                 console.log("all images loaded");
-                formData = new FormData();
+                let formData = new FormData();
                 formData.append("source", images[0].src);
                 formData.append("new", images[1].src);
                 fetch("/api.php", { method: "POST", body: formData })
@@ -100,54 +100,73 @@
                     const n = res.new.TextDetections.map(
                       (item) => item.DetectedText
                     ).join("");
-                    console.log(Diff);
-                    let diff = Diff.diffChars(s, n, { ignoreCase: false });
-                    let fd = new FormData();
-                    fd.append("a", s);
-                    fd.append("b", n);
-                    fetch("http://apis.998990.xyz/dish/diffs", {
-                      method: "POST",
-                      body: fd,
+                    let al = aligner.NWaligner({
+                      gapSymbol: "⭐"
                     })
-                      .then((res) => res.json())
-                      .then((res) => {
-                        var fragment = document.createDocumentFragment();
-                        res.data.forEach((r) => {
-                          var span = document.createElement("span");
-                          let color = 'gray'
-                          switch (r.action) {
-                            case '=':
-                              color = 'gray'
-                              span.appendChild(document.createTextNode(r.new_element))
-                              break;
-                            case '+':
-                              color = 'green'
-                              span.appendChild(document.createTextNode(r.new_element))
-                              break;
-                            case '-':
-                              color = 'red'
-                              span.appendChild(document.createTextNode(r.old_element))
-                              break;
-                            case '!':
-                              color = 'blue'
-                              span.appendChild(document.createTextNode(r.new_element))
-                              break;
-                            default:
-                              break;
-                          }
-                          span.style.color = color
-                          fragment.appendChild(span);
-                        });
-                        document
-                          .querySelector(".item-source")
-                          .appendChild(sourceFragment);
-                        document
-                          .querySelector(".item-new")
-                          .appendChild(fragment);
-                      })
-                      .catch((err) => {
-                        console.log(err);
-                      });
+                    let r = al.align(s,n)
+                    let ssequence = r.alignedSequences[0].split("")
+                    let nsequence = r.alignedSequences[1].split("")
+                    for(let i=0; i < ssequence.length; i++) {
+                      if(ssequence[i] == "⭐" && nsequence[i] == "⭐") {
+                        nsequence[i] = ""
+                      }
+                      if(ssequence[i] != '⭐' && nsequence[i] == '⭐') {
+                        nsequence[i] = `<span style="background-color:red;color:#f0f0f0;text-decoration:line-through;">${ssequence[i]}</span>`
+                      }
+                      if(ssequence[i] == '⭐' && nsequence[i] != '⭐') {
+                        nsequence[i] = `<span style="color:green">${nsequence[i]}</span>`
+                      }
+                    }
+                    document.querySelector(".item-new").innerHTML =  nsequence.join('');
+                    document.querySelector(".item-source").innerHTML = s
+                    // console.log(Diff);
+                    // let diff = Diff.diffChars(s, n, { ignoreCase: false });
+                    // let fd = new FormData();
+                    // fd.append("a", s);
+                    // fd.append("b", n);
+                    // fetch("http://apis.998990.xyz/dish/diffs", {
+                    //   method: "POST",
+                    //   body: fd,
+                    // })
+                    //   .then((res) => res.json())
+                    //   .then((res) => {
+                    //     var fragment = document.createDocumentFragment();
+                    //     res.data.forEach((r) => {
+                    //       var span = document.createElement("span");
+                    //       let color = 'gray'
+                    //       switch (r.action) {
+                    //         case '=':
+                    //           color = 'gray'
+                    //           span.appendChild(document.createTextNode(r.new_element))
+                    //           break;
+                    //         case '+':
+                    //           color = 'green'
+                    //           span.appendChild(document.createTextNode(r.new_element))
+                    //           break;
+                    //         case '-':
+                    //           color = 'red'
+                    //           span.appendChild(document.createTextNode(r.old_element))
+                    //           break;
+                    //         case '!':
+                    //           color = 'blue'
+                    //           span.appendChild(document.createTextNode(r.new_element))
+                    //           break;
+                    //         default:
+                    //           break;
+                    //       }
+                    //       span.style.color = color
+                    //       fragment.appendChild(span);
+                    //     });
+                    //     document
+                    //       .querySelector(".item-source")
+                    //       .appendChild(sourceFragment);
+                    //     document
+                    //       .querySelector(".item-new")
+                    //       .appendChild(fragment);
+                    //   })
+                    //   .catch((err) => {
+                    //     console.log(err);
+                    //   });
                     var sourceFragment = document.createDocumentFragment();
                     sourceFragment.appendChild(document.createTextNode(s));
                   });

@@ -34,7 +34,8 @@ try {
     
     $params = array(
         "ImageBase64" => explode(",", $s)[1],
-        "EnableDetectSplit" => true
+        "EnableDetectSplit" => true,
+        "IsWords"=> true
     );
     $req->fromJsonString(json_encode($params));
 
