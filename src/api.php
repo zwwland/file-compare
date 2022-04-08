@@ -37,9 +37,8 @@ try {
     $params = array(
         "ImageBase64" => explode(",", $s)[1],
         //手写体
-        // "EnableWordPolygon "=> true,
-
-        "EnableDetectSplit" => true,
+        "EnableWordPolygon "=> true,
+        // "EnableDetectSplit" => true,
         "IsWords"=> true
     );
     $req->fromJsonString(json_encode($params));
@@ -59,8 +58,47 @@ try {
     $resp = $client->GeneralAccurateOCR($req);
     $data['new'] = json_decode($resp->toJsonString(), true);
 
+    file_put_contents('./tmp.png', base64_decode(explode(',',$n)[1]));
+
+    $s = draw('./tmp.png', $data);
+
     echo json_encode($data);
-}
-catch(TencentCloudSDKException $e) {
+}catch(TencentCloudSDKException $e) {
     echo $e;
 }
+
+
+function draw($imagePos, $data)
+{
+    
+    return '';
+    
+}
+
+function send_post($url, $post_data) {
+  
+
+    $options = array(
+  
+      'http' => array(
+  
+        'method' => 'POST',
+  
+        'header' => 'Content-type:application/json',
+  
+        'content' => json_encode($post_data),
+  
+        'timeout' => 15 * 60 // 超时时间（单位:s）
+  
+      )
+  
+    );
+  
+    $context = stream_context_create($options);
+  
+    $result = file_get_contents($url, false, $context);
+  
+     
+    return $result;
+  
+  }

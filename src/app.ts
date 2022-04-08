@@ -22,6 +22,10 @@ async function serveHttp(conn: Deno.Conn) {
   for await (const requestEvent of httpConn) {
     // The native HTTP server uses the web standard `Request` and `Response`
     // objects.
+    if (requestEvent.request.method !== "POST") {
+      requestEvent.respondWith(new Response('not allowed', { status: 405 }));
+      break
+    }
     try {
 
     const js: {a:string, b:string} = await requestEvent.request.json();
