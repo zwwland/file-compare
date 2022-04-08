@@ -95,12 +95,13 @@
                   .then((res) => res.json())
                   .then((res) => {
                     const s = res.source.TextDetections.map(
-                      (item) => item.DetectedText.replace(/[\s\,「」\-="'，。.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
-                    ).join("");
+                      (item) => item.DetectedText.replace(/[\s\,「」\-\="'，。\.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
+                    ).join("✌");
                     const n = res.new.TextDetections.map(
-                      (item) => item.DetectedText.replace(/[\s\,「」\-="'，。.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
-                    ).join("");
-                    // console.log(s,n)
+                      (item) => item.DetectedText.replace(/[\s\,「」\-\="'，。\.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
+                    ).join("✌");
+                    console.log(s)
+                    console.log(n)
                     let al = aligner.NWaligner({
                       gapSymbol: "⭐"
                     })
@@ -112,14 +113,14 @@
                         nsequence[i] = ""
                       }
                       if(ssequence[i] != '⭐' && nsequence[i] == '⭐') {
-                        nsequence[i] = `<span style="background-color:red;color:#f0f0f0;text-decoration:line-through;">${ssequence[i]}</span>`
+                        nsequence[i] = `<span style="border:1px solid red;">${ssequence[i]}</span>`
                       }
                       if(ssequence[i] == '⭐' && nsequence[i] != '⭐') {
-                        nsequence[i] = `<span style="color:green">${nsequence[i]}</span>`
+                        nsequence[i] = `<span style="border:1px solid green">${nsequence[i]}</span>`
                       }
                     }
-                    document.querySelector(".item-new").innerHTML =  nsequence.join('');
-                    document.querySelector(".item-source").innerHTML = s
+                    document.querySelector(".item-new").innerHTML =  nsequence.join('').replace(/✌/g, "<br />");
+                    document.querySelector(".item-source").innerHTML = s.replace(/✌/g, "<br>");
                     // console.log(Diff);
                     // let diff = Diff.diffChars(s, n, { ignoreCase: false });
                     // let fd = new FormData();

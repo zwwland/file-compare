@@ -31,14 +31,14 @@ try {
     $clientProfile->setHttpProfile($httpProfile);
     $client = new OcrClient($cred, "ap-beijing", $clientProfile);
 
-    // $req = new GeneralAccurateOCRRequest();
-    $req = new GeneralHandwritingOCRRequest();
+    $req = new GeneralAccurateOCRRequest();
+    // $req = new GeneralHandwritingOCRRequest();
     
     $params = array(
         "ImageBase64" => explode(",", $s)[1],
         //手写体
-        "EnableWordPolygon "=> true,
-        // "EnableDetectSplit" => true,
+        // "EnableWordPolygon "=> true,
+        "EnableDetectSplit" => true,
         "IsWords"=> true
     );
     $req->fromJsonString(json_encode($params));
@@ -51,10 +51,12 @@ try {
 
     $params = array(
         "ImageBase64" => explode(",", $n)[1],
-        "EnableDetectSplit" => true
+        "EnableDetectSplit" => true,
+        "IsWords"=> true
     );
     $req->fromJsonString(json_encode($params));
 
+    // $resp = $client->GeneralHandwritingOCR($req);
     $resp = $client->GeneralAccurateOCR($req);
     $data['new'] = json_decode($resp->toJsonString(), true);
 
