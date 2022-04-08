@@ -31,7 +31,8 @@
         height: 300px;
         border: 1px solid;
         box-sizing: border-box;
-        overflow: scroll;
+        overflow-y: scroll;
+        overflow-x: scroll;
       }
       .red {
         color: red;
@@ -64,124 +65,7 @@
       <div class="item-source"></div>
       <div class="item-new"></div>
     </div>
-    <script type="module" >
-      import aligner from './out.js'
-      !(function () {
-        const files = document.querySelectorAll(".files input");
-        files.forEach((f, i) => {
-          f.addEventListener("change", function () {
-            const f = this.files[0];
-            const reader = new FileReader();
-            const url = reader.readAsDataURL(f);
-            reader.addEventListener("loadend", function () {
-              const images = document.querySelectorAll(".images img");
-              images[i].src = this.result;
-              // if (images.forEach(g => g.src.length > 0) == -1)
-              // {
-              //     console.log("all images loaded")
-              // }
-              let count = 0;
-              for (const im of images) {
-                if (im.src.length > 0) {
-                  count++;
-                }
-              }
-              if (count == 2) {
-                console.log("all images loaded");
-                let formData = new FormData();
-                formData.append("source", images[0].src);
-                formData.append("new", images[1].src);
-                fetch("/api.php", { method: "POST", body: formData })
-                  .then((res) => res.json())
-                  .then((res) => {
-                    const s = res.source.TextDetections.map(
-                      (item) => item.DetectedText.replace(/[\s\,「」\-\="'，。\.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
-                    ).join("✌");
-                    const n = res.new.TextDetections.map(
-                      (item) => item.DetectedText.replace(/[\s\,「」\-\="'，。\.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
-                    ).join("✌");
-                    console.log(s)
-                    console.log(n)
-                    let al = aligner.NWaligner({
-                      gapSymbol: "⭐"
-                    })
-                    let r = al.align(s,n)
-                    let ssequence = r.alignedSequences[0].split("")
-                    let nsequence = r.alignedSequences[1].split("")
-                    for(let i=0; i < ssequence.length; i++) {
-                      if(ssequence[i] == "⭐" && nsequence[i] == "⭐") {
-                        nsequence[i] = ""
-                      }
-                      if(ssequence[i] != '⭐' && nsequence[i] == '⭐') {
-                        nsequence[i] = `<span style="border:1px solid red;">${ssequence[i]}</span>`
-                      }
-                      if(ssequence[i] == '⭐' && nsequence[i] != '⭐') {
-                        nsequence[i] = `<span style="border:1px solid green">${nsequence[i]}</span>`
-                      }
-                    }
-                    document.querySelector(".item-new").innerHTML =  nsequence.join('').replace(/✌/g, "<br />");
-                    document.querySelector(".item-source").innerHTML = s.replace(/✌/g, "<br>");
-                    // console.log(Diff);
-                    // let diff = Diff.diffChars(s, n, { ignoreCase: false });
-                    // let fd = new FormData();
-                    // fd.append("a", s);
-                    // fd.append("b", n);
-                    // fetch("http://apis.998990.xyz/dish/diffs", {
-                    //   method: "POST",
-                    //   body: fd,
-                    // })
-                    //   .then((res) => res.json())
-                    //   .then((res) => {
-                    //     var fragment = document.createDocumentFragment();
-                    //     res.data.forEach((r) => {
-                    //       var span = document.createElement("span");
-                    //       let color = 'gray'
-                    //       switch (r.action) {
-                    //         case '=':
-                    //           color = 'gray'
-                    //           span.appendChild(document.createTextNode(r.new_element))
-                    //           break;
-                    //         case '+':
-                    //           color = 'green'
-                    //           span.appendChild(document.createTextNode(r.new_element))
-                    //           break;
-                    //         case '-':
-                    //           color = 'red'
-                    //           span.appendChild(document.createTextNode(r.old_element))
-                    //           break;
-                    //         case '!':
-                    //           color = 'blue'
-                    //           span.appendChild(document.createTextNode(r.new_element))
-                    //           break;
-                    //         default:
-                    //           break;
-                    //       }
-                    //       span.style.color = color
-                    //       fragment.appendChild(span);
-                    //     });
-                    //     document
-                    //       .querySelector(".item-source")
-                    //       .appendChild(sourceFragment);
-                    //     document
-                    //       .querySelector(".item-new")
-                    //       .appendChild(fragment);
-                    //   })
-                    //   .catch((err) => {
-                    //     console.log(err);
-                    //   });
-                    var sourceFragment = document.createDocumentFragment();
-                    sourceFragment.appendChild(document.createTextNode(s));
-                  });
-              }
-              reader.removeEventListener("loadend", this);
-            });
-          });
-        });
-        console.log(files);
-      })();
-      // fetch('api.php').then(res=>res.text()).then(data=>{
-      //     console.log(data);
-      // })
+    <script type="module" src="diff.js">
     </script>
   </body>
 </html>
