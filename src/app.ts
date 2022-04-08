@@ -4,8 +4,9 @@ const al = aligner.NWaligner({
   gapSymbol: "⭐️"
 });
 // Start listening on port 8080 of localhost.
-const server = Deno.listen({ port: Number(Deno.env.get("START_PORT")??8080) });
-console.log(`HTTP webserver running.  Access it at:  http://localhost:8080/`);
+const port = Number(Deno.env.get("START_PORT")??8080);
+const server = Deno.listen({ port: port });
+console.log(`HTTP webserver running.  Access it at:  http://localhost:${port}/`);
 
 // Connections to the server will be yielded up as an async iterable.
 for await (const conn of server) {
