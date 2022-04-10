@@ -30,13 +30,13 @@
                     let source = []
                     if(res.source.TextDetections.length > 0)
                     {
-                      let basicSourceDiff = (res.source.TextDetections[0].Polygon[0].Y - res.source.TextDetections[0].Polygon[0].Y) ** 2
+                      const basicSourceDiff = (res.source.TextDetections[0].Polygon[0].Y - res.source.TextDetections[0].Polygon[0].Y) ** 2
                       let basicSourceLastY = res.source.TextDetections[0].Polygon[0].Y
 
                       for(const text of res.source.TextDetections)
                       {
-                        let diff = (text.Polygon[0].Y - basicSourceLastY) ** 2
-                        if (diff < 20)
+                        let diff = (text.Polygon[0].Y - basicSourceLastY - basicSourceDiff) ** 2
+                        if (diff < 26)
                         {
                           if(source.length == 0)
                           {
@@ -44,7 +44,7 @@
                           }else{
                             source[source.length - 1 ].DetectedText += text.DetectedText
                             source[source.length - 1 ].ItemPolygon.Width += text.ItemPolygon.Width
-                            source[source.length - 1 ].ItemPolygon.Height += text.ItemPolygon.Height
+                            // source[source.length - 1 ].ItemPolygon.Height += text.ItemPolygon.Height
                             source[source.length - 1 ].WordCoordPoint.push(...text.WordCoordPoint)
                             source[source.length - 1 ].Words.push(...text.Words)
                           }
@@ -57,20 +57,20 @@
                     let ne = []
                     if(res.new.TextDetections.length > 0)
                     {
-                      let basicNewDiff = (res.new.TextDetections[0].Polygon[0].Y - res.new.TextDetections[0].Polygon[0].Y) ** 2
+                      const basicNewDiff = (res.new.TextDetections[0].Polygon[0].Y - res.new.TextDetections[0].Polygon[0].Y) ** 2
                       let basicNewLastY = res.new.TextDetections[0].Polygon[0].Y
 
                       for(const text of res.new.TextDetections)
                       {
-                        let diff = (text.Polygon[0].Y - basicNewLastY) ** 2
-                        if (diff < 20) {
+                        let diff = (text.Polygon[0].Y - basicNewLastY - basicNewDiff) ** 2
+                        if (diff < 26) {
                           if(ne.length == 0)
                           {
                             ne.push(text)
                           }else{
                             ne[ne.length - 1 ].DetectedText += text.DetectedText
                             ne[ne.length - 1 ].ItemPolygon.Width += text.ItemPolygon.Width
-                            ne[ne.length - 1 ].ItemPolygon.Height += text.ItemPolygon.Height
+                            // ne[ne.length - 1 ].ItemPolygon.Height += text.ItemPolygon.Height
                             ne[ne.length - 1 ].WordCoordPoint.push(...text.WordCoordPoint)
                             ne[ne.length - 1 ].Words.push(...text.Words)
                           }
@@ -86,12 +86,13 @@
                     const n = ne.map(
                       (item) => item.DetectedText.replace(/[\s\,「」\-\="'，。\.；;、\\/ ：:()（）\[\]【】 “” > < 》 《]/g, "")
                     ).join("✌");
+                    console.log(s,n,source,ne)
                     let al = aligner.NWaligner({
                       gapSymbol: "⭐"
                     })
-                    let start = (new Date()).getTime();
+                    // let start = (new Date()).getTime();
                     let r = al.align(s,n)
-                    let start1 = (new Date()).getTime();
+                    // let start1 = (new Date()).getTime();
                     let ssequence = r.alignedSequences[0].split("")
                     let nsequence = r.alignedSequences[1].split("")
                     for(let i=0; i < ssequence.length; i++) {
@@ -105,10 +106,10 @@
                         nsequence[i] = `<span style="border:1px solid green">${nsequence[i]}</span>`
                       }
                     }
-                    let start2 = (new Date()).getTime();
+                    // let start2 = (new Date()).getTime();
                     document.querySelector(".item-new").innerHTML =  nsequence.join('').replace(/✌/g, "<br />");
                     document.querySelector(".item-source").innerHTML = s.replace(/✌/g, "<br>");
-                    let start3 = (new Date()).getTime();
+                    // let start3 = (new Date()).getTime();
                     // console.log(start3-start2, start2-start1, start1 - start);
                     var sourceFragment = document.createDocumentFragment();
                     sourceFragment.appendChild(document.createTextNode(s));
