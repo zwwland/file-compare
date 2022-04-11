@@ -193,7 +193,7 @@ function draw($imagePos, $data, $outputPos)
         $coord = array_map(fn ($n) => ['x' => $n['X'], 'y' => $n['Y']], $d['coord']['WordCoordinate']);
         $draw = new \ImagickDraw();
         $draw->setStrokeOpacity(1);
-        $draw->setStrokeColor('red');
+        $draw->setStrokeColor('green');
         $draw->setStrokeWidth(2);
         $draw->setFillColor('rgba(255,255,255,0)');
         $draw->polyline($coord);
