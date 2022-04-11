@@ -21,19 +21,18 @@
       }
       .item {
         width: 100%;
-        height: 300px;
         display: flex;
         flex-direction: row;
         justify-content: space-around;
       }
-      .item div {
+      /* .item div {
         width: 35%;
         height: 300px;
         border: 1px solid;
         box-sizing: border-box;
         overflow-y: scroll;
         overflow-x: scroll;
-      }
+      } */
       .red {
         color: red;
       }
@@ -59,11 +58,13 @@
       <img class="image-new" />
     </div>
     <hr />
-    对比结果：(其中：<span class="red">红色缺失的</span> |
-    <span class="green">绿色新增的</span>)
+    对比结果：
+    <!-- (其中：<span class="red">红色缺失的</span> | -->
+    <span class="green">绿色是识别有差异的</span>
+    <!-- ) -->
     <div class="item">
-      <div class="item-source"></div>
-      <div class="item-new"></div>
+      <img class="item-source" />
+      <img class="item-new" />
     </div>
     <script type="module" src="diff.js">
     </script>

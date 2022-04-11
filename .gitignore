@@ -1,3 +1,5 @@
 /vendor/
 .env
 /src/tmp.*
+/src/img/*.png
+/src/img/*.jpeg
