@@ -1,8 +1,5 @@
 import aligner from "./algorithm.js";
 
-const al = aligner.NWaligner({
-  gapSymbol: "⭐️"
-});
 // Start listening on port 8080 of localhost.
 const port = Number(Deno.env.get("START_PORT")??8080);
 const server = Deno.listen({ port: port });
@@ -29,7 +26,14 @@ async function serveHttp(conn: Deno.Conn) {
     }
     try {
 
-    const js: {a:string, b:string} = await requestEvent.request.json();
+    const al = aligner.NWaligner({
+      gapSymbol: "⭐️"
+    });
+    const js: {a:string, b:string, sym:string|undefined} = await requestEvent.request.json();
+    if(js.sym)
+    {
+      al.gapSymbol = js.sym;
+    }
     const res = al.align(js.a, js.b);
     const body = JSON.stringify(res)  
     // The requestEvent's `.respondWith()` method is how we send the response
