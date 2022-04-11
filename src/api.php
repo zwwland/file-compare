@@ -10,7 +10,7 @@ use TencentCloud\Ocr\V20181119\OcrClient;
 use TencentCloud\Ocr\V20181119\Models\GeneralAccurateOCRRequest;
 use TencentCloud\Ocr\V20181119\Models\GeneralHandwritingOCRRequest;
 
-error_reporting(E_ALL);
+error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED);
 
 $dotenv = \Dotenv\Dotenv::createMutable(__DIR__);
 $dotenv->load();
@@ -65,7 +65,7 @@ try {
     $resp = $client->GeneralAccurateOCR($req);
     $data['new'] = json_decode($resp->toJsonString(), true);
 
-    $reg = ["\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', '，', '。', '.', '；', ';', '、', '：', ':', '(', ')', '（', '）', '[', ']', '【', '】', '"', "'", '‘', '’', '“', '”', '>', '<', '》', '《', ' ', '_', '凵','↵'];
+    $reg = ["\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', '，', '。', '.', '；', ';', '、', '：', ':', '(', ')', '（', '）', '[', ']', '【', '】', '"', "'", '‘', '’', '“', '”', '>', '<', '》', '《', ' ', '_', '凵', '↵'];
 
     //原字符串处理
     $sourceData = [];
@@ -118,8 +118,7 @@ try {
         $tx = mb_substr($res_decode['alignedSequences'][0], $i, 1);
         $ty = mb_substr($res_decode['alignedSequences'][1], $i, 1);
 
-        if($tx === '⭐' && $ty === '⭐')
-        {
+        if ($tx === '⭐' && $ty === '⭐') {
             // $xDiff[] = [
             //     'color' => 'green',
             //     'coord' => $sourceData[$x]['coord']
@@ -131,30 +130,22 @@ try {
             // $x++;
             // $y++;
             continue;
-        }
-
-        else if($tx === '⭐' && $ty !== '⭐')
-        {
+        } else if ($tx === '⭐' && $ty !== '⭐') {
             $yDiff[] = [
                 'color' => 'green',
                 'coord' => $newData[$y]['coord']
             ];
             $y++;
-        }
-
-        else if($tx !== '⭐' && $ty === '⭐')
-        {
+        } else if ($tx !== '⭐' && $ty === '⭐') {
             $xDiff[] = [
                 'color' => 'green',
                 'coord' => $sourceData[$x]['coord']
             ];
             $x++;
-        }
-        else {
+        } else {
             $x++;
             $y++;
         }
-
     }
 
     $r = time() . random_int(100000, 999999);
@@ -164,8 +155,8 @@ try {
     if (str_contains($sData[0], 'png')) {
         $sExt = 'png';
     }
-    $oldImg = 'img/'.$r.'tmp-old.' . $sExt;
-    $oldImgNew = 'img/'.$r.'tmp-old-1.' . $sExt;
+    $oldImg = 'img/' . $r . 'tmp-old.' . $sExt;
+    $oldImgNew = 'img/' . $r . 'tmp-old-1.' . $sExt;
 
     if (str_contains($nData[0], 'jpeg')) {
         $nExt = 'jpeg';
@@ -173,8 +164,8 @@ try {
     if (str_contains($nData[0], 'png')) {
         $nExt = 'png';
     }
-    $newImg = 'img/'.$r.'tmp-new.'  . $nExt;
-    $newImgNew = 'img/'.$r.'tmp-new-1.' . $nExt;
+    $newImg = 'img/' . $r . 'tmp-new.'  . $nExt;
+    $newImgNew = 'img/' . $r . 'tmp-new-1.' . $nExt;
 
 
     file_put_contents($oldImg, base64_decode($sData[1]));
@@ -196,54 +187,20 @@ try {
 function draw($imagePos, $data, $outputPos)
 {
     $info = pathinfo($imagePos);
-
-    switch ($info['extension']) {
-        case 'jpeg':
-        case 'jpg':
-            $img = imagecreatefromjpeg($imagePos);
-            break;
-        case 'png':
-            $img = imagecreatefrompng($imagePos);
-            break;
-        case 'gif':
-            $img = imagecreatefromgif($imagePos);
-            break;
-        default:
-            die('不支持的图片文件类型');
-            break;
-    }
-
-    $green = imagecolorallocate($img, 0, 255, 0);
+    $image = new \Imagick($imagePos);
 
     foreach ($data as $d) {
-        $coord = array_map(function ($n) {
-            return [$n['X'], $n['Y']];
-        }, $d['coord']['WordCoordinate']);
-
-        $coord2 = [];
-        foreach ($coord as $c) {
-            $coord2 = array_merge($coord2, array_values($c));
-        }
-        imagepolygon($img, $coord2, 4, $green);
+        $coord = array_map(fn ($n) => ['x' => $n['X'], 'y' => $n['Y']], $d['coord']['WordCoordinate']);
+        $draw = new \ImagickDraw();
+        $draw->setStrokeOpacity(1);
+        $draw->setStrokeColor('red');
+        $draw->setStrokeWidth(2);
+        $draw->setFillColor('rgba(255,255,255,0)');
+        $draw->polyline($coord);
+        $image->drawImage($draw);
     }
-
-    switch ($info['extension']) {
-        case 'jpeg':
-        case 'jpg':
-            imagejpeg($img, $outputPos);
-            break;
-        case 'png':
-            imagepng($img, $outputPos);
-            break;
-        case 'gif':
-            imagegif($img, $outputPos);
-            break;
-        default:
-            die('不支持的图片文件类型');
-            break;
-    }
-
-    imagedestroy($img);
+    $image->setImageFormat('png');
+    file_put_contents($outputPos, $image->getImageBlob());
 
     return true;
 }

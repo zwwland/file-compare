@@ -46,6 +46,9 @@
       /* border-color: green; */
       /* } */
     </style>
+    <link rel="stylesheet" href="zoomify.min.css">
+    <script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="zoomify.min.js"></script>
   </head>
   <body>
     <p class="files">
@@ -67,6 +70,9 @@
       <img class="item-new" />
     </div>
     <script type="module" src="diff.js">
+    </script>
+    <script>
+      $('img').zoomify();
     </script>
   </body>
 </html>
