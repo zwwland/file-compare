@@ -199,7 +199,8 @@ function draw($imagePos, $data, $outputPos)
         $draw->setStrokeColor('green');
         $draw->setStrokeWidth(2);
         $draw->setFillColor('rgba(255,255,255,0)');
-        $draw->polyline($coord);
+        // $draw->setStrokeWidth(2);
+        $draw->polygon($coord);
         $image->drawImage($draw);
     }
     $image->setImageFormat('png');
