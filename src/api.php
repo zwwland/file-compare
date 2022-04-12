@@ -65,7 +65,7 @@ try {
     $resp = $client->GeneralAccurateOCR($req);
     $data['new'] = json_decode($resp->toJsonString(), true);
 
-    $reg = ["\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', '，', '。', '.', '；', ';', '、', '：', ':', '(', ')', '（', '）', '[', ']', '【', '】', '"', "'", '‘', '’', '“', '”', '>', '<', '》', '《', ' ', '_', '凵', '↵', '#'];
+    $reg = ["\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', '，', ',', '。', '.', '；', ';', '、', '：', ':', '(', ')', '（', '）', '[', ']', '【', '】', '"', "'", '‘', '’', '“', '”', '>', '<', '》', '《', ' ', '_', '凵', '↵', '#'];
 
     //原字符串处理
     $sourceData = [];
@@ -108,7 +108,9 @@ try {
     $res_decode = json_decode($res, true);
 
     $polygons = [];
-    $len = mb_strlen($res_decode['alignedSequences'][0]);
+    $textRaw = mb_str_split($res_decode['alignedSequences'][0]);
+    $textNew = mb_str_split($res_decode['alignedSequences'][1]);
+    $len = count($textRaw);
 
 
     $x = 0;
@@ -116,10 +118,10 @@ try {
     $xDiff = [];
     $yDiff = [];
     for ($i = 0; $i < $len; $i++) {
-        $tx = mb_substr($res_decode['alignedSequences'][0], $i, 1);
-        $ty = mb_substr($res_decode['alignedSequences'][1], $i, 1);
+        $tx = $textRaw[$i];
+        $ty = $textNew[$i];
 
-        if ($tx === '⭐' && $ty === '⭐') {
+        if ($tx === '#' && $ty === '#') {
             // $xDiff[] = [
             //     'color' => 'green',
             //     'coord' => $sourceData[$x]['coord']
@@ -131,13 +133,13 @@ try {
             // $x++;
             // $y++;
             continue;
-        } else if ($tx === '⭐' && $ty !== '⭐') {
+        } else if ($tx === '#' && $ty !== '#') {
             $yDiff[] = [
                 'color' => 'green',
                 'coord' => $newData[$y]['coord']
             ];
             $y++;
-        } else if ($tx !== '⭐' && $ty === '⭐') {
+        } else if ($tx !== '#' && $ty === '#') {
             $xDiff[] = [
                 'color' => 'green',
                 'coord' => $sourceData[$x]['coord']
