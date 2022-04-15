@@ -27,6 +27,7 @@ $sData = explode(',', $s);
 $nData = explode(',', $n);
 try {
 
+    $start_time = microtime(true);
 
     $cred = new Credential($id, $sec);
     $httpProfile = new HttpProfile();
@@ -65,7 +66,15 @@ try {
     $resp = $client->GeneralAccurateOCR($req);
     $data['new'] = json_decode($resp->toJsonString(), true);
 
-    $reg = ["\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', '，', ',', '。', '.', '；', ';', '、', '：', ':', '(', ')', '（', '）', '[', ']', '【', '】', '"', "'", '‘', '’', '“', '”', '>', '<', '》', '《', ' ', '_', '凵', '↵', '#'];
+    $ocr_time = microtime(true);
+
+    $reg = [
+        "\t", "\r", "\n", '\\', '/', '「', '」', '-', '=', 
+        '，', ',', '。', '.', '；', ';', '、', '：', ':', 
+        '(', ')', '（', '）', '[', ']', '【', '】', '"', 
+        "'", '‘', '’', '“', '”', '>', '<', '》', '《', 
+        ' ', '_', '凵', '↵', '#', '|', '*', '^', '~', '？', '?'
+    ];
 
     //原字符串处理
     $sourceData = [];
@@ -100,12 +109,16 @@ try {
     $a = array_reduce($sourceData, fn ($a, $b) => $a . $b['word']['Character'], '');
     $b = array_reduce($newData, fn ($a, $b) => $a . $b['word']['Character'], '');
 
+    $combine_time = microtime(true);
+
     $res = http_curl_json('http://127.0.0.1:8086', [
-        'a' => $a,
-        'b' => $b,
-        'sym'=>'#'
+        'a'   => $a,
+        'b'   => $b,
+        'sym' => '#'
     ], 'POST');
     $res_decode = json_decode($res, true);
+
+    $compare_time = microtime(true);
 
     $polygons = [];
     $textRaw = mb_str_split($res_decode['alignedSequences'][0]);
@@ -170,15 +183,23 @@ try {
     $newImg = 'img/' . $r . 'tmp-new.'  . $nExt;
     $newImgNew = 'img/' . $r . 'tmp-new-1.' . $nExt;
 
+    $put_time = microtime(true);
 
     file_put_contents($oldImg, base64_decode($sData[1]));
     draw($oldImg, $xDiff, $oldImgNew);
     file_put_contents($newImg, base64_decode($nData[1]));
     draw($newImg, $yDiff, $newImgNew);
 
+    $draw_time = microtime(true);
+
     echo json_encode([
         's' => './' . $oldImgNew . '?v=' . time() . random_int(0, 10000),
         'n' => './' . $newImgNew . '?v=' . time() . random_int(0, 10000),
+        'ocr' => $ocr_time - $start_time,
+        'combine' => $combine_time - $ocr_time,
+        'compare' => $compare_time - $combine_time,
+        'put' => $put_time - $compare_time,
+        'draw' => $draw_time - $put_time,
     ]);
 
     // echo json_encode(['s'=>base64_encode(file_get_contents('tmp-old-1.png')), 'n'=>base64_encode(file_get_contents('tmp-new-1.png'))]);
