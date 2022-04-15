@@ -100,7 +100,7 @@ try {
     $a = array_reduce($sourceData, fn ($a, $b) => $a . $b['word']['Character'], '');
     $b = array_reduce($newData, fn ($a, $b) => $a . $b['word']['Character'], '');
 
-    $res = http_curl_json('http://stamper.998990.xyz:8086', [
+    $res = http_curl_json('http://127.0.0.1:8086', [
         'a' => $a,
         'b' => $b,
         'sym'=>'#'

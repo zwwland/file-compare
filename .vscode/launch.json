@@ -33,7 +33,7 @@
                 "-dxdebug.mode=debug",
                 "-dxdebug.start_with_request=yes",
                 "-S",
-                "0.0.0.0:8000",
+                "0.0.0.0:8010",
                 "-t",
                 "src"
             ],
